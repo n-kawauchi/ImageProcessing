@@ -1,40 +1,34 @@
 ﻿// -*- C++ -*-
 /*!
- * @file  OpenCVCamera.h
+ * @file  OpenCVCameraTest.h
  * @brief USB Camera Acquire component
  * @date  $Date$
+ *
+ * @author Noriaki Ando <n-ando@aist.go.jp>
  *
  * $Id$
  */
 
-#ifndef OPENCVCAMERA_H
-#define OPENCVCAMERA_H
+#ifndef OPENCVCAMERA_TEST__H
+#define OPENCVCAMERA_TEST_H
 
 #include <rtm/idl/BasicDataTypeSkel.h>
 #include <rtm/idl/ExtendedDataTypesSkel.h>
 #include <rtm/idl/InterfaceDataTypesSkel.h>
 
-#include <opencv2/opencv.hpp>
-using namespace cv;
-#if CV_MAJOR_VERSION < 3
-#ifndef CAP_PROP_FPS
-#define CAP_PROP_FPS CV_CAP_PROP_FPS
-#endif
-#endif //CV_MAJOR_VERSION
-
-#define FRAME_WIDTH 640
-#define FRAME_HEIGHT 480
-#define FRAME_RATE 30
-
 // Service implementation headers
 // <rtc-template block="service_impl_h">
+#include "InterfaceDataTypesSVC_impl.h"
 
 // </rtc-template>
 
 // Service Consumer stub headers
 // <rtc-template block="consumer_stub_h">
-#include "InterfaceDataTypesStub.h"
 
+// </rtc-template>
+
+// Service Consumer stub headers
+// <rtc-template block="port_stub_h">
 // </rtc-template>
 
 #include <rtm/Manager.h>
@@ -43,14 +37,12 @@ using namespace cv;
 #include <rtm/DataInPort.h>
 #include <rtm/DataOutPort.h>
 
-using namespace RTC;
-
 /*!
- * @class OpenCVCamera
+ * @class OpenCVCameraTest
  * @brief USB Camera Acquire component
  *
  */
-class OpenCVCamera
+class OpenCVCameraTest
   : public RTC::DataFlowComponentBase
 {
  public:
@@ -58,12 +50,12 @@ class OpenCVCamera
    * @brief constructor
    * @param manager Maneger Object
    */
-  OpenCVCamera(RTC::Manager* manager);
+  OpenCVCameraTest(RTC::Manager* manager);
 
   /*!
    * @brief destructor
    */
-  ~OpenCVCamera();
+  ~OpenCVCameraTest();
 
   // <rtc-template block="public_attribute">
   
@@ -76,6 +68,7 @@ class OpenCVCamera
   /***
    *
    * The initialize action (on CREATED->ALIVE transition)
+   * formaer rtc_init_entry() 
    *
    * @return RTC::ReturnCode_t
    * 
@@ -86,6 +79,7 @@ class OpenCVCamera
   /***
    *
    * The finalize action (on ALIVE->END transition)
+   * formaer rtc_exiting_entry()
    *
    * @return RTC::ReturnCode_t
    * 
@@ -96,6 +90,7 @@ class OpenCVCamera
   /***
    *
    * The startup action when ExecutionContext startup
+   * former rtc_starting_entry()
    *
    * @param ec_id target ExecutionContext Id
    *
@@ -108,6 +103,7 @@ class OpenCVCamera
   /***
    *
    * The shutdown action when ExecutionContext stop
+   * former rtc_stopping_entry()
    *
    * @param ec_id target ExecutionContext Id
    *
@@ -120,6 +116,7 @@ class OpenCVCamera
   /***
    *
    * The activated action (Active state entry action)
+   * former rtc_active_entry()
    *
    * @param ec_id target ExecutionContext Id
    *
@@ -132,6 +129,7 @@ class OpenCVCamera
   /***
    *
    * The deactivated action (Active state exit action)
+   * former rtc_active_exit()
    *
    * @param ec_id target ExecutionContext Id
    *
@@ -144,6 +142,7 @@ class OpenCVCamera
   /***
    *
    * The execution action that is invoked periodically
+   * former rtc_active_do()
    *
    * @param ec_id target ExecutionContext Id
    *
@@ -156,6 +155,7 @@ class OpenCVCamera
   /***
    *
    * The aborting action when main logic error occurred.
+   * former rtc_aborting_entry()
    *
    * @param ec_id target ExecutionContext Id
    *
@@ -168,6 +168,7 @@ class OpenCVCamera
   /***
    *
    * The error action in ERROR state
+   * former rtc_error_do()
    *
    * @param ec_id target ExecutionContext Id
    *
@@ -180,6 +181,7 @@ class OpenCVCamera
   /***
    *
    * The reset action that is invoked resetting
+   * This is same but different the former rtc_init_entry()
    *
    * @param ec_id target ExecutionContext Id
    *
@@ -192,6 +194,7 @@ class OpenCVCamera
   /***
    *
    * The state update action that is invoked after onExecute() action
+   * no corresponding operation exists in OpenRTm-aist-0.2.0
    *
    * @param ec_id target ExecutionContext Id
    *
@@ -204,6 +207,7 @@ class OpenCVCamera
   /***
    *
    * The action that is invoked when execution context's rate is changed
+   * no corresponding operation exists in OpenRTm-aist-0.2.0
    *
    * @param ec_id target ExecutionContext Id
    *
@@ -291,33 +295,21 @@ class OpenCVCamera
    * - DefaultValue: 0.25
    */
   double m_auto_exposure;
-  /*!
-   * 
-   * - Name:  video_file
-   * - DefaultValue: C:\video.mp4
-   */
-  std::string m_video_file;
-  /*!
-   * 
-   * - Name:  capture_mode
-   * - DefaultValue: 0
-   */
-  int m_capture_mode;
-  
+
   // </rtc-template>
 
   // DataInPort declaration
   // <rtc-template block="inport_declare">
+  RTC::CameraImage m_out;
+  /*!
+   */
+  RTC::InPort<RTC::CameraImage> m_outIn;
   
   // </rtc-template>
 
 
   // DataOutPort declaration
   // <rtc-template block="outport_declare">
-  RTC::CameraImage m_out;
-  /*!
-   */
-  RTC::OutPort<RTC::CameraImage> m_outOut;
   
   // </rtc-template>
 
@@ -344,41 +336,13 @@ class OpenCVCamera
   // <rtc-template block="private_operation">
   
   // </rtc-template>
-  void get_camera_property(std::string action_name);
-  bool open_camera(std::string action_name);
-  void check_camera_brightness_property();
-  void check_camera_contrast_property();
-  
-  int m_device_id;
-  std::string m_video_file_current;  
-  int m_current_frame_width;
-  int m_current_frame_height;
-  int m_current_frame_rate;
-  
-  double m_currentBrightness;
-  double m_currentContrast;
-  double m_currentSaturation;
-  double m_currentHue;
-  double m_currentGain;
-  double m_currentExposure;
-  double m_currentAutoExposure;
-  
-  double m_real_camera_Brightness;
-  double m_real_camera_Contrast;
-  double m_real_camera_Saturation;
-  double m_real_camera_Hue;
-  double m_real_camera_Gain;
-  double m_real_camera_Exposure;
-  double m_real_camera_AutoExposure;
-    
-  cv::VideoCapture m_capture;
-  int dummy;
+
 };
 
 
 extern "C"
 {
-  DLL_EXPORT void OpenCVCameraInit(RTC::Manager* manager);
+  DLL_EXPORT void OpenCVCameraTestInit(RTC::Manager* manager);
 };
 
-#endif // OPENCVCAMERA_H
+#endif // OPENCVCAMERA_TEST_H

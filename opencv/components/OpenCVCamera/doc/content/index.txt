@@ -1,4 +1,4 @@
-OpenCVCameraName - English
+﻿OpenCVCameraName - English
 ========================
 
 .. toctree::
@@ -107,6 +107,16 @@ The available configuration parameters are described below:
 Parameter        Data type          Default Value    Effect
 ================ ================== ================ ======
 device_num       int                0                
+frame_width      int                640              
+frame_height     int                480              
+frame_rate       int                30               
+brightness       int                128              
+contrast         int                32               
+saturation       int                32               
+hue              double             0.2              
+gain             double             0.5              
+exposure         double             0.5              
+auto_exposure    double             0.25             
 ================ ================== ================ ======
 
 Ports
