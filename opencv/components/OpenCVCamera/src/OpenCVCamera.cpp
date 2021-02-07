@@ -11,8 +11,6 @@
 #include <chrono>
 #include <iostream>
 
-using namespace std;
-
 // Module specification
 // <rtc-template block="module_spec">
 static const char* opencvcamera_spec[] =
@@ -40,6 +38,8 @@ static const char* opencvcamera_spec[] =
     "conf.default.gain", "0.5",
     "conf.default.exposure", "0.5",
     "conf.default.auto_exposure", "0.25",
+    "conf.default.video_file", "video.mp4",
+    "conf.default.capture_mode", "0",
 
     // Widget
     "conf.__widget__.device_num", "text",
@@ -53,11 +53,14 @@ static const char* opencvcamera_spec[] =
     "conf.__widget__.gain", "slider.0.01",
     "conf.__widget__.exposure", "slider.0.01",
     "conf.__widget__.auto_exposure", "slider.0.01",
+    "conf.__widget__.video_file", "text",
+    "conf.__widget__.capture_mode", "radio",
     // Constraints
     "conf.__constraints__.hue", "0.0<=x<=1.0",
     "conf.__constraints__.gain", "0.0<=x<=1.0",
     "conf.__constraints__.exposure", "0.0<=x<=1.0",
     "conf.__constraints__.auto_exposure", "0.0<=x<=1.0",
+    "conf.__constraints__.capture_mode", "(0,1)",
 
     "conf.__type__.device_num", "int",
     "conf.__type__.frame_width", "int",
@@ -70,6 +73,8 @@ static const char* opencvcamera_spec[] =
     "conf.__type__.gain", "double",
     "conf.__type__.exposure", "double",
     "conf.__type__.auto_exposure", "double",
+    "conf.__type__.video_file", "string",
+    "conf.__type__.capture_mode", "int",
 
     ""
   };
@@ -89,8 +94,8 @@ OpenCVCamera::OpenCVCamera(RTC::Manager* manager)
     m_currentContrast(32),
     m_currentSaturation(32),
     m_currentHue(0.2),
-    m_currentGain(0.2),
-    m_currentExposure(0.25),
+    m_currentGain(0.5),
+    m_currentExposure(0.5),
     m_currentAutoExposure(0.25),   
     dummy(0)
 {
@@ -135,6 +140,8 @@ RTC::ReturnCode_t OpenCVCamera::onInitialize()
   bindParameter("gain", m_gain, "0.5");
   bindParameter("exposure", m_exposure, "0.5");
   bindParameter("auto_exposure", m_auto_exposure, "0.25");
+  bindParameter("video_file", m_video_file, "video.mp4");
+  bindParameter("capture_mode", m_capture_mode, "0");
   // </rtc-template>
  
   m_device_id = -1;
@@ -167,9 +174,16 @@ RTC::ReturnCode_t OpenCVCamera::onShutdown(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t OpenCVCamera::onActivated(RTC::UniqueId ec_id)
 {
+  using std::cout;
+  using std::endl;
+  m_CamCtl = new CaptureCameraControl(&m_capture);
+
   if (m_capture_mode == 0) // Camera Mode
   {
-    if (open_camera("onActivated"))
+    copy_config_camera_property("all");
+    
+    m_device_id = m_device_num;
+    if (m_CamCtl->open_camera(&m_config_prm))
     {
       cout << "Camera device opened." << endl;
       RTC_TRACE(("*** onActivated: Camera device opened. "));
@@ -182,14 +196,14 @@ RTC::ReturnCode_t OpenCVCamera::onActivated(RTC::UniqueId ec_id)
     m_current_frame_width = m_frame_width;
     m_current_frame_height = m_frame_height;
     m_current_frame_rate = m_frame_rate;
-    m_video_file_current = m_video_file;
+    m_current_video_file = m_video_file;
     
-    get_camera_property("onActivated");
+    get_real_camera_property("onActivated");
   }
   else
   {
     m_capture.open(m_video_file);
-    std::cout << "CAP_FPS: " << m_capture.get(CAP_PROP_FPS) << std::endl;
+    cout << "CAP_FPS: " << m_capture.get(CAP_PROP_FPS) << endl;
     double fps = m_capture.get(CAP_PROP_FPS);
     if (!m_capture.isOpened())
     {
@@ -204,6 +218,7 @@ RTC::ReturnCode_t OpenCVCamera::onActivated(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t OpenCVCamera::onDeactivated(RTC::UniqueId ec_id)
 {
+  delete m_CamCtl;
   m_capture.release();
   return RTC::RTC_OK;
 }
@@ -211,96 +226,17 @@ RTC::ReturnCode_t OpenCVCamera::onDeactivated(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t OpenCVCamera::onExecute(RTC::UniqueId ec_id)
 {
+  using std::cout;
+  using std::endl;
   static auto tmOld = std::chrono::system_clock::now();
   static int count = 0;
   const int DISPLAY_PERIOD_FRAME_NUM = 100;
   cv::Mat cam_frame;
 
-  if (m_capture_mode == 0)
+  if (!check_config_parameters())
   {
-    if (m_device_num != m_device_id)
-    {
-      //m_capture.release();
-      if (open_camera("onExecute"))
-      {
-        cout << "Changed camera device opened." << endl;
-        RTC_TRACE(("*** onExecute: Changed camera device opened. "));
-      }
-      else
-      {
-        return RTC::RTC_ERROR;
-      }
-      get_camera_property("onExecute");
-    }
+    return RTC::RTC_ERROR;
   }
-  else
-  {
-    if (m_video_file_current != m_video_file)
-    {
-      m_video_file_current = m_video_file;
-      m_capture.open(m_video_file);
-
-      if (!m_capture.isOpened())
-      {
-        cout << "No Video File" << endl;
-        return RTC::RTC_ERROR;
-      }
-    }
-  }
-
-  if (m_current_frame_width != m_frame_width)
-  {
-    m_capture.set(CAP_PROP_FRAME_WIDTH, m_frame_width);
-    m_current_frame_width = m_frame_width;
-    cout << "set frame_width :" << m_frame_width << endl;
-    RTC_TRACE(("*** onExecute:  set frame width :%d", m_frame_width));
-  }
-  if (m_current_frame_height != m_frame_height)
-  {
-    m_capture.set(CAP_PROP_FRAME_HEIGHT, m_frame_height);
-    m_current_frame_height = m_frame_height;
-    cout << "set frame_height :" << m_frame_height << endl;
-    RTC_TRACE(("*** onExecute:  set frame height :%d", m_frame_height));
-  }
-  if (m_current_frame_rate != m_frame_rate)
-  {
-    m_capture.set(CAP_PROP_FPS, m_frame_rate);
-    m_current_frame_rate = m_frame_rate;
-    cout << "set frame rate :" << m_frame_rate << endl;
-    RTC_TRACE(("*** onExecute:  set frame rate :%d", m_frame_rate));
-  }
-  
-  check_camera_brightness_property();
-  check_camera_contrast_property();
-  
-  
-  
-  if(m_currentSaturation != 0 && m_currentSaturation != m_saturation)
-  {
-    m_capture.set(CAP_PROP_SATURATION, m_saturation);
-    m_currentSaturation = m_saturation;
-  }
-  if(m_currentHue != 0 && m_currentHue != m_hue)
-  {
-    m_capture.set(CAP_PROP_HUE, m_hue);
-    m_currentHue = m_hue;
-  }
-  if(m_currentGain != 0 && m_currentGain != m_gain)
-  {
-    m_capture.set(CAP_PROP_GAIN, m_gain);
-    m_currentGain= m_gain;
-  }
-  if(m_currentExposure != 0 && m_currentExposure != m_exposure)
-  {
-    m_capture.set(CAP_PROP_EXPOSURE, m_exposure);
-    m_currentExposure = m_exposure;
-  }
-  if(m_currentAutoExposure != 0 && m_currentAutoExposure != m_auto_exposure)
-  {
-    m_capture.set(CAP_PROP_AUTO_EXPOSURE, m_auto_exposure);
-    m_currentAutoExposure = m_auto_exposure;
-  }
-  
   try
   {
     if (!m_capture.read(cam_frame))
@@ -343,6 +279,7 @@ RTC::ReturnCode_t OpenCVCamera::onExecute(RTC::UniqueId ec_id)
       }
     }
   }
+  
   cv::Mat frame;
   frame = cam_frame;
   
@@ -406,35 +343,167 @@ RTC::ReturnCode_t OpenCVCamera::onRateChanged(RTC::UniqueId ec_id)
 }
 */
 
-bool OpenCVCamera::open_camera(std::string action_name)
+bool OpenCVCamera::check_config_parameters()
 {
-  m_device_id = m_device_num;
-  //m_capture.open(m_device_id);
-  m_capture.open(m_device_id, CAP_V4L);
-  cout << "Camera device :" << m_device_id << endl;
-  RTC_TRACE(("*** %s: Camera device(%d) open.", action_name.c_str(), m_device_id));
+  using std::cout;
+  using std::endl;
 
-  m_capture.set(CAP_PROP_FPS, m_frame_rate);
-  cout << "set frame rate :" << m_frame_rate << endl;
-  RTC_TRACE(("*** %s:  set frame rate :%d", action_name.c_str(), m_frame_rate));
-
-  m_capture.set(CAP_PROP_FRAME_WIDTH, m_frame_width);
-  m_capture.set(CAP_PROP_FRAME_HEIGHT, m_frame_height);
-  cout << "set frame_width :" << m_frame_width << endl;
-  cout << "set frame_height :" << m_frame_height << endl;
-  RTC_TRACE(("*** %s:  set frame width :%d", action_name.c_str(), m_frame_width));
-  RTC_TRACE(("*** %s:  set frame height :%d", action_name.c_str(), m_frame_height));
-
-  if (!m_capture.isOpened())
+  if (m_capture_mode == 0)
   {
-    cout << "No Camera Device" << endl;
-    return false;
+    if (m_device_num != m_device_id)
+    {
+      copy_config_camera_property("basic");
+      m_device_id = m_device_num;
+      
+      if (m_CamCtl->open_camera(&m_config_prm))
+      {
+        cout << "Changed camera device opened." << endl;
+        RTC_TRACE(("*** onExecute: Changed camera device opened. "));
+      }
+      else
+      {
+        return false;
+      }
+      get_real_camera_property("onExecute");
+    }
   }
+  else
+  {
+    if (m_current_video_file != m_video_file)
+    {
+      m_current_video_file = m_video_file;
+      m_capture.open(m_video_file);
+
+      if (!m_capture.isOpened())
+      {
+        cout << "No Video File" << endl;
+        return false;
+      }
+    }
+  }
+
+  if (m_current_frame_width != m_frame_width &&
+          m_current_frame_height != m_frame_height)
+  {
+    copy_config_camera_property("frame_width");
+    copy_config_camera_property("frame_height");
+    m_current_frame_width = m_frame_width;
+    m_current_frame_height = m_frame_height;
+    
+    m_CamCtl->set_camera_property("frame_width", m_frame_width, CAP_PROP_FRAME_WIDTH);    
+    m_CamCtl->set_camera_property("frame_height", m_frame_height, CAP_PROP_FRAME_HEIGHT);    
+  }
+  
+  if (m_current_frame_rate != m_frame_rate)
+  {
+    copy_config_camera_property("frame_rate");
+    m_current_frame_rate = m_frame_rate;
+    m_CamCtl->set_camera_property("frame_rate", m_frame_rate, CAP_PROP_FPS);    
+  }
+  
+  if (m_currentBrightness != m_brightness)
+  {
+    copy_config_camera_property("brightness");
+    m_currentBrightness = m_brightness;
+    m_CamCtl->check_and_set_camera_property("Brightness", 
+                m_real_camera_Brightness, m_brightness, CAP_PROP_BRIGHTNESS);    
+  }
+  
+  if (m_currentContrast != m_contrast)
+  {
+    copy_config_camera_property("contrast");
+    m_currentContrast = m_contrast;
+    m_CamCtl->check_and_set_camera_property("Contrast", 
+                m_real_camera_Contrast, m_contrast, CAP_PROP_CONTRAST);    
+  }
+  
+  if (m_currentSaturation != m_saturation)
+  {
+    copy_config_camera_property("saturation");
+    m_currentSaturation = m_saturation;
+    m_CamCtl->check_and_set_camera_property("Saturation", 
+                m_real_camera_Saturation, m_saturation, CAP_PROP_SATURATION);
+  }
+  
+  if (m_currentHue != m_hue)
+  {
+    copy_config_camera_property("hue");
+    m_currentHue = m_hue;
+    m_CamCtl->check_and_set_camera_property("Hue", 
+                m_real_camera_Hue, m_hue, CAP_PROP_HUE);
+  }
+  
+  if (m_currentGain != m_gain)
+  {
+    copy_config_camera_property("gain");
+    m_currentGain = m_gain;
+    m_CamCtl->check_and_set_camera_property("Gain", 
+                m_real_camera_Gain, m_gain, CAP_PROP_GAIN);
+  }
+  
+  if (m_currentExposure != m_exposure)
+  {
+    copy_config_camera_property("exposure");
+    m_currentExposure = m_exposure;
+    m_CamCtl->check_and_set_camera_property("Exposure", 
+                m_real_camera_Exposure, m_exposure, CAP_PROP_EXPOSURE);
+  }
+  
+  if(m_currentAutoExposure != m_auto_exposure)
+  {
+    copy_config_camera_property("auto_exposure");
+    m_currentAutoExposure = m_auto_exposure;
+    m_CamCtl->check_and_set_camera_property("AutoExposure", 
+                m_real_camera_AutoExposure, m_auto_exposure, CAP_PROP_AUTO_EXPOSURE);
+  }
+  
   return true;
 }
 
-void OpenCVCamera::get_camera_property(std::string action_name)
+void OpenCVCamera::copy_config_camera_property(std::string target)
 {
+  if (target == "all" || target == "basic")
+  {
+    m_config_prm.device_num = m_device_num;
+    m_config_prm.frame_width = m_frame_width;
+    m_config_prm.frame_height = m_frame_height;
+    m_config_prm.frame_rate = m_frame_rate;
+  }
+  if (target == "all" || target == "brightness")
+  {
+    m_config_prm.brightness = m_brightness;
+  }
+  if (target == "all" || target == "contrast")
+  {
+    m_config_prm.contrast = m_contrast;
+  }
+  if (target == "all" || target == "saturation")
+  {
+    m_config_prm.saturation = m_saturation;
+  }
+  if (target == "all" || target == "hue")
+  {
+    m_config_prm.hue = m_hue;
+  }
+  if (target == "all" || target == "gain")
+  {
+    m_config_prm.gain = m_gain;
+  }
+  if (target == "all" || target == "exposure")
+  {
+    m_config_prm.exposure = m_exposure;
+  }
+  if (target == "all" || target == "auto_exposure")
+  {
+    m_config_prm.auto_exposure = m_auto_exposure;
+  }
+}
+
+void OpenCVCamera::get_real_camera_property(std::string action_name)
+{
+  using std::cout;
+  using std::endl;
+  
   double Brightness = m_capture.get(cv::CAP_PROP_BRIGHTNESS);
   if (Brightness > 0)
   {
@@ -528,74 +597,7 @@ void OpenCVCamera::get_camera_property(std::string action_name)
     cout << "AutoExposure property is not supported." << endl;
     RTC_TRACE(("*** %s:  AutoExposure property is not supported.", action_name.c_str()));
   }
-  
-  cout << "m_currentBrightness : " << m_currentBrightness << endl;
-  cout << "m_currentContrast : " << m_currentContrast << endl;
-  cout << "m_currentSaturation : " << m_currentSaturation << endl;
-  cout << "m_currentHue : " << m_currentHue << endl;
-  cout << "m_currentGain : " << m_currentGain << endl;
-  cout << "m_currentExposure : " << m_currentExposure << endl;
-  cout << "m_currentAutoExposure : " << m_currentAutoExposure << endl;
 }
-
-void OpenCVCamera::check_camera_brightness_property()
-{
-  if(m_currentBrightness != m_brightness)
-  {
-    m_currentBrightness = m_brightness;
-    if(m_real_camera_Brightness == 0)
-    {
-      cout << "Brightness property is not supported." << endl;
-      RTC_TRACE(("*** onExecute:  Brightness property is not supported."));
-    }
-    else
-    {
-      if (!m_capture.set(CAP_PROP_BRIGHTNESS, m_brightness))
-      {      
-        cout << "set Brightness is not supported." << endl;
-        RTC_TRACE(("*** onExecute:  set Brightness is not supported."));
-      }
-      else
-      {
-        cout << "set Brightness :" << m_brightness << endl;
-        RTC_TRACE(("*** onExecute:  set Brightness :%d", m_brightness));
-      }
-      cout << "check : get camera Brightness : " << m_capture.get(cv::CAP_PROP_BRIGHTNESS) << endl;
-      RTC_TRACE(("*** check : get camera Brightness :%f", m_capture.get(cv::CAP_PROP_BRIGHTNESS)));
-    }
-  }
-}
-
-void OpenCVCamera::check_camera_contrast_property()
-{
-  if(m_currentContrast != m_contrast)
-  {
-    m_currentContrast = m_contrast;
-    if(m_real_camera_Contrast == 0)
-    {
-      cout << "Contrast property is not supported." << endl;
-      RTC_TRACE(("*** onExecute:  Contrast property is not supported."));
-    }
-    else
-    {
-      if (!m_capture.set(CAP_PROP_CONTRAST, m_contrast))
-      {      
-        cout << "set Brightness is not supported." << endl;
-        RTC_TRACE(("*** onExecute:  set Brightness is not supported."));
-      
-      }
-      else
-      {
-        cout << "set Contrast :" << m_contrast << endl;
-        RTC_TRACE(("*** onExecute:  set Contrast :%d", m_contrast));
-      }
-      cout << "check : get camera Contrast : " << m_capture.get(cv::CAP_PROP_CONTRAST) << endl;
-      RTC_TRACE(("*** check : get camera Contrast :%f", m_capture.get(cv::CAP_PROP_CONTRAST)));
-    }
-  }
-}
-
-
 
 extern "C"
 {

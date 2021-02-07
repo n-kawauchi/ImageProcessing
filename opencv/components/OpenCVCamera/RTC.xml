@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <rtc:RtcProfile rtc:version="0.2" rtc:id="RTC:AIST:opencv-rtcs:OpenCVCamera:1.2.3" xmlns:rtc="http://www.openrtp.org/namespaces/rtc" xmlns:rtcExt="http://www.openrtp.org/namespaces/rtc_ext" xmlns:rtcDoc="http://www.openrtp.org/namespaces/rtc_doc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-    <rtc:BasicInfo xsi:type="rtcExt:basic_info_ext" rtcExt:saveProject="OpenCVCamera" rtc:updateDate="2021-01-20T14:22:35+09:00" rtc:creationDate="2013-06-12T09:53:05+09:00" rtc:version="1.2.3" rtc:vendor="AIST" rtc:maxInstances="1" rtc:executionType="PeriodicExecutionContext" rtc:executionRate="1000.0" rtc:description="USB Camera Acquire component" rtc:category="opencv-rtcs" rtc:componentKind="DataFlowComponent" rtc:activityType="PERIODIC" rtc:componentType="STATIC" rtc:name="OpenCVCamera">
+    <rtc:BasicInfo xsi:type="rtcExt:basic_info_ext" rtcExt:saveProject="OpenCVCamera" rtc:updateDate="2021-02-02T22:35:14.894+09:00" rtc:creationDate="2013-06-12T09:53:05+09:00" rtc:version="1.2.3" rtc:vendor="AIST" rtc:maxInstances="1" rtc:executionType="PeriodicExecutionContext" rtc:executionRate="1000.0" rtc:description="USB Camera Acquire component" rtc:category="opencv-rtcs" rtc:componentKind="DataFlowComponent" rtc:activityType="PERIODIC" rtc:componentType="STATIC" rtc:name="OpenCVCamera">
         <rtcDoc:Doc rtcDoc:reference="" rtcDoc:license="" rtcDoc:creator="Noriaki Ando &lt;n-ando@aist.go.jp&gt;" rtcDoc:algorithm="" rtcDoc:inout="" rtcDoc:description=""/>
         <rtcExt:VersionUpLogs></rtcExt:VersionUpLogs>
         <rtcExt:VersionUpLogs></rtcExt:VersionUpLogs>
@@ -87,6 +87,32 @@
                 </rtc:ConstraintUnitType>
             </rtc:Constraint>
             <rtcExt:Properties rtcExt:value="slider.0.01" rtcExt:name="__widget__"/>
+        </rtc:Configuration>
+        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="" rtc:unit="" rtc:defaultValue="video.mp4" rtc:type="string" rtc:name="video_file">
+            <rtcExt:Properties rtcExt:value="text" rtcExt:name="__widget__"/>
+        </rtc:Configuration>
+        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="" rtc:unit="" rtc:defaultValue="0" rtc:type="int" rtc:name="capture_mode">
+            <rtc:Constraint>
+                <rtc:ConstraintUnitType>
+                    <rtc:Or>
+                        <rtc:Constraint>
+                            <rtc:ConstraintUnitType>
+                                <rtc:propertyIsEqualTo rtc:matchCase="false">
+                                    <rtc:Literal>0</rtc:Literal>
+                                </rtc:propertyIsEqualTo>
+                            </rtc:ConstraintUnitType>
+                        </rtc:Constraint>
+                        <rtc:Constraint>
+                            <rtc:ConstraintUnitType>
+                                <rtc:propertyIsEqualTo rtc:matchCase="false">
+                                    <rtc:Literal>1</rtc:Literal>
+                                </rtc:propertyIsEqualTo>
+                            </rtc:ConstraintUnitType>
+                        </rtc:Constraint>
+                    </rtc:Or>
+                </rtc:ConstraintUnitType>
+            </rtc:Constraint>
+            <rtcExt:Properties rtcExt:value="radio" rtcExt:name="__widget__"/>
         </rtc:Configuration>
     </rtc:ConfigurationSet>
     <rtc:DataPorts xsi:type="rtcExt:dataport_ext" rtcExt:position="RIGHT" rtcExt:variableName="out" rtc:unit="" rtc:subscriptionType="" rtc:dataflowType="" rtc:interfaceType="" rtc:idlFile="C:\Program Files\OpenRTM-aist\1.2.1\rtm\idl\InterfaceDataTypes.idl" rtc:type="RTC::CameraImage" rtc:name="out" rtc:portType="DataOutPort"/>

@@ -4,6 +4,8 @@
  * @brief USB Camera Acquire component
  * @date $Date$
  *
+ * @author Noriaki Ando <n-ando@aist.go.jp>
+ *
  * $Id$
  */
 
@@ -36,6 +38,8 @@ static const char* opencvcamera_spec[] =
     "conf.default.gain", "0.5",
     "conf.default.exposure", "0.5",
     "conf.default.auto_exposure", "0.25",
+    "conf.default.video_file", "video.mp4",
+    "conf.default.capture_mode", "0",
 
     // Widget
     "conf.__widget__.device_num", "text",
@@ -49,11 +53,14 @@ static const char* opencvcamera_spec[] =
     "conf.__widget__.gain", "slider.0.01",
     "conf.__widget__.exposure", "slider.0.01",
     "conf.__widget__.auto_exposure", "slider.0.01",
+    "conf.__widget__.video_file", "text",
+    "conf.__widget__.capture_mode", "radio",
     // Constraints
     "conf.__constraints__.hue", "0.0<=x<=1.0",
     "conf.__constraints__.gain", "0.0<=x<=1.0",
     "conf.__constraints__.exposure", "0.0<=x<=1.0",
     "conf.__constraints__.auto_exposure", "0.0<=x<=1.0",
+    "conf.__constraints__.capture_mode", "(0,1)",
 
     "conf.__type__.device_num", "int",
     "conf.__type__.frame_width", "int",
@@ -66,6 +73,8 @@ static const char* opencvcamera_spec[] =
     "conf.__type__.gain", "double",
     "conf.__type__.exposure", "double",
     "conf.__type__.auto_exposure", "double",
+    "conf.__type__.video_file", "string",
+    "conf.__type__.capture_mode", "int",
 
     ""
   };
@@ -123,6 +132,8 @@ RTC::ReturnCode_t OpenCVCameraTest::onInitialize()
   bindParameter("gain", m_gain, "0.5");
   bindParameter("exposure", m_exposure, "0.5");
   bindParameter("auto_exposure", m_auto_exposure, "0.25");
+  bindParameter("video_file", m_video_file, "video.mp4");
+  bindParameter("capture_mode", m_capture_mode, "0");
   // </rtc-template>
 
   return RTC::RTC_OK;

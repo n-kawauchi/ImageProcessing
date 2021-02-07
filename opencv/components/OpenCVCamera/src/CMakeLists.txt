@@ -1,4 +1,4 @@
-set(comp_srcs OpenCVCamera.cpp )
+set(comp_srcs OpenCVCamera.cpp CaptureCameraControl.cpp)
 set(standalone_srcs OpenCVCameraComp.cpp)
 
 find_package(OpenCV REQUIRED)

@@ -295,6 +295,18 @@ class OpenCVCameraTest
    * - DefaultValue: 0.25
    */
   double m_auto_exposure;
+  /*!
+   * 
+   * - Name:  video_file
+   * - DefaultValue: video.mp4
+   */
+  std::string m_video_file;
+  /*!
+   * 
+   * - Name:  capture_mode
+   * - DefaultValue: 0
+   */
+  int m_capture_mode;
 
   // </rtc-template>
 

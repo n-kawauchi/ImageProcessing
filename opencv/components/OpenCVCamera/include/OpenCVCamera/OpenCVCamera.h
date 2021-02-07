@@ -14,13 +14,7 @@
 #include <rtm/idl/ExtendedDataTypesSkel.h>
 #include <rtm/idl/InterfaceDataTypesSkel.h>
 
-#include <opencv2/opencv.hpp>
-using namespace cv;
-#if CV_MAJOR_VERSION < 3
-#ifndef CAP_PROP_FPS
-#define CAP_PROP_FPS CV_CAP_PROP_FPS
-#endif
-#endif //CV_MAJOR_VERSION
+#include "CaptureCameraControl.h"
 
 #define FRAME_WIDTH 640
 #define FRAME_HEIGHT 480
@@ -294,7 +288,7 @@ class OpenCVCamera
   /*!
    * 
    * - Name:  video_file
-   * - DefaultValue: C:\video.mp4
+   * - DefaultValue: video.mp4
    */
   std::string m_video_file;
   /*!
@@ -303,7 +297,7 @@ class OpenCVCamera
    * - DefaultValue: 0
    */
   int m_capture_mode;
-  
+
   // </rtc-template>
 
   // DataInPort declaration
@@ -344,13 +338,16 @@ class OpenCVCamera
   // <rtc-template block="private_operation">
   
   // </rtc-template>
-  void get_camera_property(std::string action_name);
-  bool open_camera(std::string action_name);
-  void check_camera_brightness_property();
-  void check_camera_contrast_property();
+  cv::VideoCapture m_capture;
+  CaptureCameraControl *m_CamCtl;
+  CONFIG_PRM m_config_prm;
+  
+  bool check_config_parameters();
+  void copy_config_camera_property(std::string target);
+  void get_real_camera_property(std::string action_name);
   
   int m_device_id;
-  std::string m_video_file_current;  
+  std::string m_current_video_file;  
   int m_current_frame_width;
   int m_current_frame_height;
   int m_current_frame_rate;
@@ -371,7 +368,7 @@ class OpenCVCamera
   double m_real_camera_Exposure;
   double m_real_camera_AutoExposure;
     
-  cv::VideoCapture m_capture;
+  
   int dummy;
 };
 

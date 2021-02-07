@@ -1,0 +1,90 @@
+//
+// @file   CaptureCameraControl.cpp
+// @brief  OpenCV camera control class.
+//
+
+#include "CaptureCameraControl.h"
+#include <iostream>
+
+CaptureCameraControl::CaptureCameraControl(VideoCapture *cap)
+{
+  m_cap = cap;
+}
+
+bool CaptureCameraControl::open_camera(CONFIG_PRM *prm)
+{
+  using std::cout;
+  using std::endl;
+  
+  m_cap->open(prm->device_num, CAP_V4L);
+  
+  cout << "Camera device :" << prm->device_num << endl;
+  RTC_TRACE(("*** Camera device(%d) open.", prm->device_num));
+
+  m_cap->set(CAP_PROP_FPS, prm->frame_rate);
+  cout << "set frame rate :" << prm->frame_rate << endl;
+  RTC_TRACE(("*** set frame rate :%d", prm->frame_rate));
+
+  m_cap->set(CAP_PROP_FRAME_WIDTH, prm->frame_width);
+  m_cap->set(CAP_PROP_FRAME_HEIGHT, prm->frame_height);
+  cout << "set frame_width :" << prm->frame_width << endl;
+  cout << "set frame_height :" << prm->frame_height << endl;
+  RTC_TRACE(("*** set frame width :%d", prm->frame_width));
+  RTC_TRACE(("*** set frame height :%d", prm->frame_height));
+
+  if (!m_cap->isOpened())
+  {
+    cout << "No Camera Device" << endl;
+    return false;
+  }
+  return true;
+}
+
+void CaptureCameraControl::set_camera_property(
+        std::string target,
+        double config_value,
+        VideoCaptureProperties label)
+{
+  using std::cout;
+  using std::endl;
+
+  m_cap->set(label, config_value);
+  cout << "set " << target << " :" << config_value << endl;
+  RTC_TRACE(("*** set frame width :%d", config_value));
+}
+
+void CaptureCameraControl::check_and_set_camera_property(
+        std::string target,
+        double real_camera_value,
+        double config_value,
+        VideoCaptureProperties label)
+{
+  using std::cout;
+  using std::endl;
+  
+  if(real_camera_value == 0)
+  {
+    cout << target << " property is not supported." << endl;
+    RTC_TRACE(("*** %s property is not supported.", target.c_str()));
+  }
+  else
+  {
+    if (!m_cap->set(label, config_value))
+    {      
+      cout << "set " << target << " is not supported." << endl;
+      RTC_TRACE(("*** set %s is not supported.", target.c_str()));
+    }
+    else
+    {
+      cout << "set " << target << " :" << config_value << endl;
+      RTC_TRACE(("*** set %s :%d", target.c_str(), config_value));
+    }
+    cout << "check : get camera " << target << " : " << m_cap->get(label) << endl;
+    RTC_TRACE(("*** check : get camera %s :%f", target.c_str(), m_cap->get(label)));
+  }
+}
+
+
+
+
+
