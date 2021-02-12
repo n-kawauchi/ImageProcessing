@@ -113,10 +113,10 @@ frame_rate       int                30
 brightness       int                128              
 contrast         int                32               
 saturation       int                32               
-hue              double             0.2              
-gain             double             0.5              
-exposure         double             0.5              
-auto_exposure    double             0.25             
+hue              int                0                
+gain             int                64               
+exposure         int                166              
+auto_exposure    int                3                
 video_file       string             video.mp4        
 capture_mode     int                0                
 ================ ================== ================ ======

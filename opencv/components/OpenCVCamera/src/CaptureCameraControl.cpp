@@ -40,34 +40,51 @@ bool CaptureCameraControl::open_camera(CONFIG_PRM *prm)
   return true;
 }
 
+int CaptureCameraControl::get_camera_property(
+        std::string target,
+        VideoCaptureProperties label)
+{
+  using std::cout;
+  using std::endl;
+    
+  double value = m_cap->get(label);
+  if (value > 0)
+  {
+    cout << "get " << target << " :" << value << endl;
+    RTC_TRACE(("*** get camera %s :%f", target.c_str(), value));
+  }
+  else
+  {
+    value = 0;
+    cout << target << " property is not supported." << endl;
+    RTC_TRACE(("*** %s property is not supported.", target.c_str()));
+  }
+  return (int)value;
+}
+
 void CaptureCameraControl::set_camera_property(
         std::string target,
-        double config_value,
+        int config_value,
         VideoCaptureProperties label)
 {
   using std::cout;
   using std::endl;
 
-  m_cap->set(label, config_value);
+  m_cap->set(label, (double)config_value);
   cout << "set " << target << " :" << config_value << endl;
-  RTC_TRACE(("*** set frame width :%d", config_value));
+  RTC_TRACE(("*** set %s :%d", target.c_str(), config_value));
 }
 
 void CaptureCameraControl::check_and_set_camera_property(
         std::string target,
-        double real_camera_value,
-        double config_value,
+        int real_camera_value,
+        int config_value,
         VideoCaptureProperties label)
 {
   using std::cout;
   using std::endl;
   
-  if(real_camera_value == 0)
-  {
-    cout << target << " property is not supported." << endl;
-    RTC_TRACE(("*** %s property is not supported.", target.c_str()));
-  }
-  else
+  if(real_camera_value != 0)
   {
     if (!m_cap->set(label, config_value))
     {      
@@ -83,8 +100,4 @@ void CaptureCameraControl::check_and_set_camera_property(
     RTC_TRACE(("*** check : get camera %s :%f", target.c_str(), m_cap->get(label)));
   }
 }
-
-
-
-
 

@@ -34,10 +34,10 @@ static const char* opencvcamera_spec[] =
     "conf.default.brightness", "128",
     "conf.default.contrast", "32",
     "conf.default.saturation", "32",
-    "conf.default.hue", "0.2",
-    "conf.default.gain", "0.5",
-    "conf.default.exposure", "0.5",
-    "conf.default.auto_exposure", "0.25",
+    "conf.default.hue", "0",
+    "conf.default.gain", "64",
+    "conf.default.auto_exposure", "3",
+    "conf.default.exposure", "166",
     "conf.default.video_file", "video.mp4",
     "conf.default.capture_mode", "0",
 
@@ -46,20 +46,23 @@ static const char* opencvcamera_spec[] =
     "conf.__widget__.frame_width", "text",
     "conf.__widget__.frame_height", "text",
     "conf.__widget__.frame_rate", "text",
-    "conf.__widget__.brightness", "text",
-    "conf.__widget__.contrast", "text",
-    "conf.__widget__.saturation", "text",
-    "conf.__widget__.hue", "slider.0.01",
-    "conf.__widget__.gain", "slider.0.01",
-    "conf.__widget__.exposure", "slider.0.01",
-    "conf.__widget__.auto_exposure", "slider.0.01",
+    "conf.__widget__.brightness", "slider.1",
+    "conf.__widget__.contrast", "slider.1",
+    "conf.__widget__.saturation", "slider.1",
+    "conf.__widget__.hue", "slider.1",
+    "conf.__widget__.gain", "slider.1",    
+    "conf.__widget__.auto_exposure", "radio",
+    "conf.__widget__.exposure", "slider.1",
     "conf.__widget__.video_file", "text",
     "conf.__widget__.capture_mode", "radio",
     // Constraints
-    "conf.__constraints__.hue", "0.0<=x<=1.0",
-    "conf.__constraints__.gain", "0.0<=x<=1.0",
-    "conf.__constraints__.exposure", "0.0<=x<=1.0",
-    "conf.__constraints__.auto_exposure", "0.0<=x<=1.0",
+    "conf.__constraints__.brightness", "0<=x<=255",
+    "conf.__constraints__.contrast", "0<=x<=255",
+    "conf.__constraints__.saturation", "0<=x<=255",
+    "conf.__constraints__.hue", "-180<=x<=180",
+    "conf.__constraints__.gain", "0<=x<=255",   
+    "conf.__constraints__.auto_exposure", "(1,3)",
+    "conf.__constraints__.exposure", "1<=x<=100000",
     "conf.__constraints__.capture_mode", "(0,1)",
 
     "conf.__type__.device_num", "int",
@@ -69,10 +72,10 @@ static const char* opencvcamera_spec[] =
     "conf.__type__.brightness", "int",
     "conf.__type__.contrast", "int",
     "conf.__type__.saturation", "int",
-    "conf.__type__.hue", "double",
-    "conf.__type__.gain", "double",
-    "conf.__type__.exposure", "double",
-    "conf.__type__.auto_exposure", "double",
+    "conf.__type__.hue", "int",
+    "conf.__type__.gain", "int",   
+    "conf.__type__.auto_exposure", "int",
+    "conf.__type__.exposure", "int",
     "conf.__type__.video_file", "string",
     "conf.__type__.capture_mode", "int",
 
@@ -93,10 +96,10 @@ OpenCVCamera::OpenCVCamera(RTC::Manager* manager)
     m_currentBrightness(128),
     m_currentContrast(32),
     m_currentSaturation(32),
-    m_currentHue(0.2),
-    m_currentGain(0.5),
-    m_currentExposure(0.5),
-    m_currentAutoExposure(0.25),   
+    m_currentHue(0),
+    m_currentGain(64),    
+    m_currentAutoExposure(3),
+    m_currentExposure(166),  
     dummy(0)
 {
 }
@@ -136,10 +139,10 @@ RTC::ReturnCode_t OpenCVCamera::onInitialize()
   bindParameter("brightness", m_brightness, "128");
   bindParameter("contrast", m_contrast, "32");
   bindParameter("saturation", m_saturation, "32");
-  bindParameter("hue", m_hue, "0.2");
-  bindParameter("gain", m_gain, "0.5");
-  bindParameter("exposure", m_exposure, "0.5");
-  bindParameter("auto_exposure", m_auto_exposure, "0.25");
+  bindParameter("hue", m_hue, "0");
+  bindParameter("gain", m_gain, "64");
+  bindParameter("exposure", m_exposure, "166");
+  bindParameter("auto_exposure", m_auto_exposure, "3");
   bindParameter("video_file", m_video_file, "video.mp4");
   bindParameter("capture_mode", m_capture_mode, "0");
   // </rtc-template>
@@ -198,7 +201,7 @@ RTC::ReturnCode_t OpenCVCamera::onActivated(RTC::UniqueId ec_id)
     m_current_frame_rate = m_frame_rate;
     m_current_video_file = m_video_file;
     
-    get_real_camera_property("onActivated");
+    get_real_camera_property();
   }
   else
   {
@@ -364,7 +367,7 @@ bool OpenCVCamera::check_config_parameters()
       {
         return false;
       }
-      get_real_camera_property("onExecute");
+      get_real_camera_property();
     }
   }
   else
@@ -499,104 +502,15 @@ void OpenCVCamera::copy_config_camera_property(std::string target)
   }
 }
 
-void OpenCVCamera::get_real_camera_property(std::string action_name)
+void OpenCVCamera::get_real_camera_property()
 {
-  using std::cout;
-  using std::endl;
-  
-  double Brightness = m_capture.get(cv::CAP_PROP_BRIGHTNESS);
-  if (Brightness > 0)
-  {
-    m_real_camera_Brightness = Brightness;
-    cout << "get camera Brightness : " << Brightness << endl;
-    RTC_TRACE(("*** %s:  get camera Brightness :%f", action_name.c_str(), Brightness));
-  }
-  else
-  {
-    m_real_camera_Brightness = 0;
-    cout << "Brightness property is not supported." << endl;
-    RTC_TRACE(("*** %s:  Brightness property is not supported.", action_name.c_str()));
-  }
-  
-  double Contrast = m_capture.get(cv::CAP_PROP_CONTRAST);
-  if (Contrast > 0)
-  {
-    m_real_camera_Contrast = Contrast;
-    cout << "get camera Contrast : " << Contrast << endl;
-    RTC_TRACE(("*** %s:  get camera Contrast :%f", action_name.c_str(), Contrast));
-  }
-  else
-  {
-    m_real_camera_Contrast = 0;
-    cout << "Contrast property is not supported." << endl;
-    RTC_TRACE(("*** %s:  Contrast property is not supported.", action_name.c_str()));
-  }
-  
-  double Saturation = m_capture.get(cv::CAP_PROP_SATURATION);
-  if (Saturation > 0)
-  {
-    m_real_camera_Saturation = Saturation;
-    cout << "get camera Saturation : " << Saturation << endl;
-    RTC_TRACE(("*** %s:  get camera Saturation :%f", action_name.c_str(), Saturation));
-  }
-  else
-  {
-    m_real_camera_Saturation = 0;
-    cout << "Saturation property is not supported." << endl;
-    RTC_TRACE(("*** %s:  Saturation property is not supported.", action_name.c_str()));
-  }
-  
-  double Hue = m_capture.get(cv::CAP_PROP_HUE);
-  if (Hue > 0)
-  {
-    cout << "get camera Hue : " << Hue << endl;
-    RTC_TRACE(("*** %s:  get camera Hue :%f", action_name.c_str(), Hue));
-  }
-  else
-  {
-    m_real_camera_Hue = 0;
-    cout << "Hue property is not supported." << endl;
-    RTC_TRACE(("*** %s:  Hue property is not supported.", action_name.c_str()));
-  }
-  
-  double Gain = m_capture.get(cv::CAP_PROP_GAIN);
-  if (Gain > 0)
-  {
-    cout << "get camera Gain : " << Gain << endl;
-    RTC_TRACE(("*** %s:  get camera Gain :%f", action_name.c_str(), Hue));
-  }
-  else
-  {
-    m_real_camera_Gain = 0;
-    cout << "Gain property is not supported." << endl;
-    RTC_TRACE(("*** %s:  Gain property is not supported.", action_name.c_str()));
-  }
-  
-  double Exposure = m_capture.get(cv::CAP_PROP_EXPOSURE);
-  if (Gain > 0)
-  {
-    cout << "get camera Exposure : " << Exposure << endl;
-    RTC_TRACE(("*** %s:  get camera Exposure :%f", action_name.c_str(), Hue));
-  }
-  else
-  {
-    m_real_camera_Exposure = 0;
-    cout << "Exposure property is not supported." << endl;
-    RTC_TRACE(("*** %s:  Exposure property is not supported.", action_name.c_str()));
-  }
-  
-  double AutoExposure = m_capture.get(cv::CAP_PROP_AUTO_EXPOSURE);
-  if (Gain > 0)
-  {
-    cout << "get camera AutoExposure : " << AutoExposure << endl;
-    RTC_TRACE(("*** %s:  get camera AutoExposure :%f", action_name.c_str(), Hue));
-  }
-  else
-  {
-    m_real_camera_AutoExposure = 0;
-    cout << "AutoExposure property is not supported." << endl;
-    RTC_TRACE(("*** %s:  AutoExposure property is not supported.", action_name.c_str()));
-  }
+  m_real_camera_Brightness = m_CamCtl->get_camera_property("Brightness", cv::CAP_PROP_BRIGHTNESS);
+  m_real_camera_Contrast = m_CamCtl->get_camera_property("Contrast", cv::CAP_PROP_CONTRAST);
+  m_real_camera_Saturation = m_CamCtl->get_camera_property("Saturation", cv::CAP_PROP_SATURATION);  
+  m_real_camera_Hue = m_CamCtl->get_camera_property("Hue", cv::CAP_PROP_HUE);
+  m_real_camera_Gain = m_CamCtl->get_camera_property("Gain", cv::CAP_PROP_GAIN);
+  m_real_camera_Exposure = m_CamCtl->get_camera_property("Exposure", cv::CAP_PROP_EXPOSURE);
+  m_real_camera_AutoExposure = m_CamCtl->get_camera_property("AutoExposure", cv::CAP_PROP_AUTO_EXPOSURE);
 }
 
 extern "C"

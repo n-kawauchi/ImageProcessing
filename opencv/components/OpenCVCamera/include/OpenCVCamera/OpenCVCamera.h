@@ -264,27 +264,27 @@ class OpenCVCamera
   /*!
    * 
    * - Name:  hue
-   * - DefaultValue: 0.2
+   * - DefaultValue: 0
    */
-  double m_hue;
+  int m_hue;
   /*!
    * 
    * - Name:  gain
-   * - DefaultValue: 0.5
+   * - DefaultValue: 64
    */
-  double m_gain;
-  /*!
-   * 
-   * - Name:  exposure
-   * - DefaultValue: 0.5
-   */
-  double m_exposure;
+  int m_gain;
   /*!
    * 
    * - Name:  auto_exposure
-   * - DefaultValue: 0.25
+   * - DefaultValue: 3
    */
-  double m_auto_exposure;
+  int m_auto_exposure;
+    /*!
+   * 
+   * - Name:  exposure
+   * - DefaultValue: 166
+   */
+  int m_exposure;
   /*!
    * 
    * - Name:  video_file
@@ -344,7 +344,7 @@ class OpenCVCamera
   
   bool check_config_parameters();
   void copy_config_camera_property(std::string target);
-  void get_real_camera_property(std::string action_name);
+  void get_real_camera_property();
   
   int m_device_id;
   std::string m_current_video_file;  
@@ -360,13 +360,13 @@ class OpenCVCamera
   double m_currentExposure;
   double m_currentAutoExposure;
   
-  double m_real_camera_Brightness;
-  double m_real_camera_Contrast;
-  double m_real_camera_Saturation;
-  double m_real_camera_Hue;
-  double m_real_camera_Gain;
-  double m_real_camera_Exposure;
-  double m_real_camera_AutoExposure;
+  int m_real_camera_Brightness;
+  int m_real_camera_Contrast;
+  int m_real_camera_Saturation;
+  int m_real_camera_Hue;
+  int m_real_camera_Gain;
+  int m_real_camera_Exposure;
+  int m_real_camera_AutoExposure;
     
   
   int dummy;

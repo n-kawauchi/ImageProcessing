@@ -24,13 +24,15 @@ public:
   CaptureCameraControl(VideoCapture *cap);
   
   bool open_camera(CONFIG_PRM *prm);
+  int get_camera_property(std::string target,
+                         VideoCaptureProperties label);
   void check_and_set_camera_property(std::string target,
-                             double real_camera_value,
-                             double config_value,
-                             VideoCaptureProperties label);
+                         int real_camera_value,
+                         int config_value,
+                         VideoCaptureProperties label);
   void set_camera_property(std::string target,
-                           double config_value,
-                           VideoCaptureProperties label);
+                         int config_value,
+                         VideoCaptureProperties label);
 
 private:
   cv::VideoCapture *m_cap;

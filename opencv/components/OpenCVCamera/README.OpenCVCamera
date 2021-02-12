@@ -161,32 +161,32 @@ Lang Type:
 
 		Name:             hue
 		Description:     
-		Type:            double
-		DefaultValue:     0.2
+		Type:            int
+		DefaultValue:     0
 		Unit:            
 		Range:           
 		Constraint:      
 
 		Name:             gain
 		Description:     
-		Type:            double
-		DefaultValue:     0.5
+		Type:            int
+		DefaultValue:     64
 		Unit:            
 		Range:           
 		Constraint:      
 
 		Name:             exposure
 		Description:     
-		Type:            double
-		DefaultValue:     0.5
+		Type:            int
+		DefaultValue:     166
 		Unit:            
 		Range:           
 		Constraint:      
 
 		Name:             auto_exposure
 		Description:     
-		Type:            double
-		DefaultValue:     0.25
+		Type:            int
+		DefaultValue:     3
 		Unit:            
 		Range:           
 		Constraint:      

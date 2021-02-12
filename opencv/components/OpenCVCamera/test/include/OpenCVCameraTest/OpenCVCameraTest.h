@@ -274,27 +274,27 @@ class OpenCVCameraTest
   /*!
    * 
    * - Name:  hue
-   * - DefaultValue: 0.2
+   * - DefaultValue: 0
    */
-  double m_hue;
+  int m_hue;
   /*!
    * 
    * - Name:  gain
-   * - DefaultValue: 0.5
+   * - DefaultValue: 64
    */
-  double m_gain;
+  int m_gain;
   /*!
    * 
    * - Name:  exposure
-   * - DefaultValue: 0.5
+   * - DefaultValue: 166
    */
-  double m_exposure;
+  int m_exposure;
   /*!
    * 
    * - Name:  auto_exposure
-   * - DefaultValue: 0.25
+   * - DefaultValue: 3
    */
-  double m_auto_exposure;
+  int m_auto_exposure;
   /*!
    * 
    * - Name:  video_file

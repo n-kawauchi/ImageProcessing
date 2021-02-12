@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <rtc:RtcProfile rtc:version="0.2" rtc:id="RTC:AIST:opencv-rtcs:OpenCVCamera:1.2.3" xmlns:rtc="http://www.openrtp.org/namespaces/rtc" xmlns:rtcExt="http://www.openrtp.org/namespaces/rtc_ext" xmlns:rtcDoc="http://www.openrtp.org/namespaces/rtc_doc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-    <rtc:BasicInfo xsi:type="rtcExt:basic_info_ext" rtcExt:saveProject="OpenCVCamera" rtc:updateDate="2021-02-02T22:35:14.894+09:00" rtc:creationDate="2013-06-12T09:53:05+09:00" rtc:version="1.2.3" rtc:vendor="AIST" rtc:maxInstances="1" rtc:executionType="PeriodicExecutionContext" rtc:executionRate="1000.0" rtc:description="USB Camera Acquire component" rtc:category="opencv-rtcs" rtc:componentKind="DataFlowComponent" rtc:activityType="PERIODIC" rtc:componentType="STATIC" rtc:name="OpenCVCamera">
+    <rtc:BasicInfo xsi:type="rtcExt:basic_info_ext" rtcExt:saveProject="OpenCVCamera" rtc:updateDate="2021-02-02T22:35:14+09:00" rtc:creationDate="2013-06-12T09:53:05+09:00" rtc:version="1.2.3" rtc:vendor="AIST" rtc:maxInstances="1" rtc:executionType="PeriodicExecutionContext" rtc:executionRate="1000.0" rtc:description="USB Camera Acquire component" rtc:category="opencv-rtcs" rtc:componentKind="DataFlowComponent" rtc:activityType="PERIODIC" rtc:componentType="STATIC" rtc:name="OpenCVCamera">
         <rtcDoc:Doc rtcDoc:reference="" rtcDoc:license="" rtcDoc:creator="Noriaki Ando &lt;n-ando@aist.go.jp&gt;" rtcDoc:algorithm="" rtcDoc:inout="" rtcDoc:description=""/>
         <rtcExt:VersionUpLogs></rtcExt:VersionUpLogs>
         <rtcExt:VersionUpLogs></rtcExt:VersionUpLogs>
@@ -36,57 +36,93 @@
             <rtcExt:Properties rtcExt:value="text" rtcExt:name="__widget__"/>
         </rtc:Configuration>
         <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="" rtc:unit="" rtc:defaultValue="128" rtc:type="int" rtc:name="brightness">
-            <rtcExt:Properties rtcExt:value="text" rtcExt:name="__widget__"/>
+            <rtc:Constraint>
+                <rtc:ConstraintUnitType>
+                    <rtc:propertyIsBetween>
+                        <rtc:LowerBoundary>0</rtc:LowerBoundary>
+                        <rtc:UpperBoundary>255</rtc:UpperBoundary>
+                    </rtc:propertyIsBetween>
+                </rtc:ConstraintUnitType>
+            </rtc:Constraint>
+            <rtcExt:Properties rtcExt:value="slider.1" rtcExt:name="__widget__"/>
         </rtc:Configuration>
         <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="" rtc:unit="" rtc:defaultValue="32" rtc:type="int" rtc:name="contrast">
-            <rtcExt:Properties rtcExt:value="text" rtcExt:name="__widget__"/>
+            <rtc:Constraint>
+                <rtc:ConstraintUnitType>
+                    <rtc:propertyIsBetween>
+                        <rtc:LowerBoundary>0</rtc:LowerBoundary>
+                        <rtc:UpperBoundary>255</rtc:UpperBoundary>
+                    </rtc:propertyIsBetween>
+                </rtc:ConstraintUnitType>
+            </rtc:Constraint>
+            <rtcExt:Properties rtcExt:value="slider.1" rtcExt:name="__widget__"/>
         </rtc:Configuration>
         <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="" rtc:unit="" rtc:defaultValue="32" rtc:type="int" rtc:name="saturation">
-            <rtcExt:Properties rtcExt:value="text" rtcExt:name="__widget__"/>
-        </rtc:Configuration>
-        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="" rtc:unit="" rtc:defaultValue="0.2" rtc:type="double" rtc:name="hue">
             <rtc:Constraint>
                 <rtc:ConstraintUnitType>
                     <rtc:propertyIsBetween>
-                        <rtc:LowerBoundary>0.0</rtc:LowerBoundary>
-                        <rtc:UpperBoundary>1.0</rtc:UpperBoundary>
+                        <rtc:LowerBoundary>0</rtc:LowerBoundary>
+                        <rtc:UpperBoundary>255</rtc:UpperBoundary>
                     </rtc:propertyIsBetween>
                 </rtc:ConstraintUnitType>
             </rtc:Constraint>
-            <rtcExt:Properties rtcExt:value="slider.0.01" rtcExt:name="__widget__"/>
+            <rtcExt:Properties rtcExt:value="slider.1" rtcExt:name="__widget__"/>
         </rtc:Configuration>
-        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="" rtc:unit="" rtc:defaultValue="0.5" rtc:type="double" rtc:name="gain">
+        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="" rtc:unit="" rtc:defaultValue="0" rtc:type="int" rtc:name="hue">
             <rtc:Constraint>
                 <rtc:ConstraintUnitType>
                     <rtc:propertyIsBetween>
-                        <rtc:LowerBoundary>0.0</rtc:LowerBoundary>
-                        <rtc:UpperBoundary>1.0</rtc:UpperBoundary>
+                        <rtc:LowerBoundary>-180</rtc:LowerBoundary>
+                        <rtc:UpperBoundary>180</rtc:UpperBoundary>
                     </rtc:propertyIsBetween>
                 </rtc:ConstraintUnitType>
             </rtc:Constraint>
-            <rtcExt:Properties rtcExt:value="slider.0.01" rtcExt:name="__widget__"/>
+            <rtcExt:Properties rtcExt:value="slider.1" rtcExt:name="__widget__"/>
         </rtc:Configuration>
-        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="" rtc:unit="" rtc:defaultValue="0.5" rtc:type="double" rtc:name="exposure">
+        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="" rtc:unit="" rtc:defaultValue="64" rtc:type="int" rtc:name="gain">
             <rtc:Constraint>
                 <rtc:ConstraintUnitType>
                     <rtc:propertyIsBetween>
-                        <rtc:LowerBoundary>0.0</rtc:LowerBoundary>
-                        <rtc:UpperBoundary>1.0</rtc:UpperBoundary>
+                        <rtc:LowerBoundary>0</rtc:LowerBoundary>
+                        <rtc:UpperBoundary>255</rtc:UpperBoundary>
                     </rtc:propertyIsBetween>
                 </rtc:ConstraintUnitType>
             </rtc:Constraint>
-            <rtcExt:Properties rtcExt:value="slider.0.01" rtcExt:name="__widget__"/>
+            <rtcExt:Properties rtcExt:value="slider.1" rtcExt:name="__widget__"/>
         </rtc:Configuration>
-        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="" rtc:unit="" rtc:defaultValue="0.25" rtc:type="double" rtc:name="auto_exposure">
+        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="" rtc:unit="" rtc:defaultValue="3" rtc:type="int" rtc:name="auto_exposure">
+            <rtc:Constraint>
+                <rtc:ConstraintUnitType>
+                    <rtc:Or>
+                        <rtc:Constraint>
+                            <rtc:ConstraintUnitType>
+                                <rtc:propertyIsEqualTo rtc:matchCase="false">
+                                    <rtc:Literal>1</rtc:Literal>
+                                </rtc:propertyIsEqualTo>
+                            </rtc:ConstraintUnitType>
+                        </rtc:Constraint>
+                        <rtc:Constraint>
+                            <rtc:ConstraintUnitType>
+                                <rtc:propertyIsEqualTo rtc:matchCase="false">
+                                    <rtc:Literal>3</rtc:Literal>
+                                </rtc:propertyIsEqualTo>
+                            </rtc:ConstraintUnitType>
+                        </rtc:Constraint>
+                    </rtc:Or>
+                </rtc:ConstraintUnitType>
+            </rtc:Constraint>
+            <rtcExt:Properties rtcExt:value="radio" rtcExt:name="__widget__"/>
+        </rtc:Configuration>
+        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="" rtc:unit="" rtc:defaultValue="166" rtc:type="int" rtc:name="exposure">
             <rtc:Constraint>
                 <rtc:ConstraintUnitType>
                     <rtc:propertyIsBetween>
-                        <rtc:LowerBoundary>0.0</rtc:LowerBoundary>
-                        <rtc:UpperBoundary>1.0</rtc:UpperBoundary>
+                        <rtc:LowerBoundary>1</rtc:LowerBoundary>
+                        <rtc:UpperBoundary>100000</rtc:UpperBoundary>
                     </rtc:propertyIsBetween>
                 </rtc:ConstraintUnitType>
             </rtc:Constraint>
-            <rtcExt:Properties rtcExt:value="slider.0.01" rtcExt:name="__widget__"/>
+            <rtcExt:Properties rtcExt:value="slider.1" rtcExt:name="__widget__"/>
         </rtc:Configuration>
         <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="" rtc:unit="" rtc:defaultValue="video.mp4" rtc:type="string" rtc:name="video_file">
             <rtcExt:Properties rtcExt:value="text" rtcExt:name="__widget__"/>
