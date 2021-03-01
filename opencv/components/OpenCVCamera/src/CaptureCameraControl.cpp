@@ -15,11 +15,14 @@ bool CaptureCameraControl::open_camera(CONFIG_PRM *prm)
 {
   using std::cout;
   using std::endl;
-  
+
+#ifdef __linux__
   m_cap->open(prm->device_num, CAP_V4L);
-  
+#else
+  m_cap->open(prm->device_num, CAP_ANY);
+#endif
   cout << "Camera device :" << prm->device_num << endl;
-  RTC_TRACE(("*** Camera device(%d) open.", prm->device_num));
+  RTC_TRACE(("*** Camera device :%d", prm->device_num));
 
   m_cap->set(CAP_PROP_FPS, prm->frame_rate);
   cout << "set frame rate :" << prm->frame_rate << endl;
@@ -35,6 +38,43 @@ bool CaptureCameraControl::open_camera(CONFIG_PRM *prm)
   if (!m_cap->isOpened())
   {
     cout << "No Camera Device" << endl;
+    RTC_TRACE(("*** No Camera Device"));
+    return false;
+  }
+  return true;
+}
+
+bool CaptureCameraControl::open_video_file(std::string video_file)
+{
+  using std::cout;
+  using std::endl;
+  
+  cout << "Video file :" << video_file << endl;
+  RTC_TRACE(("*** Video file :%s", video_file.c_str()));
+  m_cap->open(video_file);
+  
+  if (!m_cap->isOpened())
+  {
+    cout << "No Video File." << endl;
+    RTC_TRACE(("*** No Video File."));
+    return false;
+  }
+  return true;
+}
+
+bool CaptureCameraControl::open_url(std::string url)
+{
+  using std::cout;
+  using std::endl;
+  
+  cout << "URL :" << url << endl;
+  RTC_TRACE(("*** URL :%s", url.c_str()));
+  m_cap->open(url);
+  
+  if (!m_cap->isOpened())
+  {
+    cout << "No URL." << endl;
+    RTC_TRACE(("*** No URL."));
     return false;
   }
   return true;

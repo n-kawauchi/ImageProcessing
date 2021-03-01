@@ -27,7 +27,10 @@ static const char* opencvcamera_spec[] =
     "language",          "C++",
     "lang_type",         "compile",
     // Configuration variables
+    "conf.default.capture_mode", "camera",
     "conf.default.device_num", "0",
+    "conf.default.video_file", "video.mp4",
+    "conf.default.URL", " ",
     "conf.default.frame_width", "640",
     "conf.default.frame_height", "480",
     "conf.default.frame_rate", "30",
@@ -36,13 +39,14 @@ static const char* opencvcamera_spec[] =
     "conf.default.saturation", "32",
     "conf.default.hue", "0",
     "conf.default.gain", "64",
-    "conf.default.exposure", "166",
-    "conf.default.auto_exposure", "3",
-    "conf.default.video_file", "video.mp4",
-    "conf.default.capture_mode", "0",
+    "conf.default.exposure_mode", "auto",
+    "conf.default.exposure_absolute", "166",
 
     // Widget
+    "conf.__widget__.capture_mode", "radio",
     "conf.__widget__.device_num", "text",
+    "conf.__widget__.video_file", "text",
+    "conf.__widget__.URL", "text",
     "conf.__widget__.frame_width", "text",
     "conf.__widget__.frame_height", "text",
     "conf.__widget__.frame_rate", "text",
@@ -51,21 +55,22 @@ static const char* opencvcamera_spec[] =
     "conf.__widget__.saturation", "slider.1",
     "conf.__widget__.hue", "slider.1",
     "conf.__widget__.gain", "slider.1",
-    "conf.__widget__.exposure", "slider.1",
-    "conf.__widget__.auto_exposure", "radio",
-    "conf.__widget__.video_file", "text",
-    "conf.__widget__.capture_mode", "radio",
+    "conf.__widget__.exposure_mode", "radio",
+    "conf.__widget__.exposure_absolute", "slider.1",
     // Constraints
+    "conf.__constraints__.capture_mode", "(camera,video,URL)",
     "conf.__constraints__.brightness", "0<=x<=255",
     "conf.__constraints__.contrast", "0<=x<=255",
     "conf.__constraints__.saturation", "0<=x<=255",
-    "conf.__constraints__.hue", "-180<=x<=180",
+    "conf.__constraints__.hue", "-2000<=x<=2000",
     "conf.__constraints__.gain", "0<=x<=255",
-    "conf.__constraints__.exposure", "1<=x<=100000",
-    "conf.__constraints__.auto_exposure", "(1,3)",
-    "conf.__constraints__.capture_mode", "(0,1)",
+    "conf.__constraints__.exposure_mode", "(manual,auto)",
+    "conf.__constraints__.exposure_absolute", "3<=x<=2047",
 
+    "conf.__type__.capture_mode", "string",
     "conf.__type__.device_num", "int",
+    "conf.__type__.video_file", "string",
+    "conf.__type__.URL", "string",
     "conf.__type__.frame_width", "int",
     "conf.__type__.frame_height", "int",
     "conf.__type__.frame_rate", "int",
@@ -74,10 +79,8 @@ static const char* opencvcamera_spec[] =
     "conf.__type__.saturation", "int",
     "conf.__type__.hue", "int",
     "conf.__type__.gain", "int",
-    "conf.__type__.exposure", "int",
-    "conf.__type__.auto_exposure", "int",
-    "conf.__type__.video_file", "string",
-    "conf.__type__.capture_mode", "int",
+    "conf.__type__.exposure_mode", "string",
+    "conf.__type__.exposure_absolute", "int",
 
     ""
   };
@@ -124,7 +127,10 @@ RTC::ReturnCode_t OpenCVCameraTest::onInitialize()
 
   // <rtc-template block="bind_config">
   // Bind variables and configuration variable
+  bindParameter("capture_mode", m_capture_mode, "camera");
   bindParameter("device_num", m_device_num, "0");
+  bindParameter("video_file", m_video_file, "video.mp4");
+  bindParameter("URL", m_URL, " ");
   bindParameter("frame_width", m_frame_width, "640");
   bindParameter("frame_height", m_frame_height, "480");
   bindParameter("frame_rate", m_frame_rate, "30");
@@ -133,10 +139,8 @@ RTC::ReturnCode_t OpenCVCameraTest::onInitialize()
   bindParameter("saturation", m_saturation, "32");
   bindParameter("hue", m_hue, "0");
   bindParameter("gain", m_gain, "64");
-  bindParameter("exposure", m_exposure, "166");
-  bindParameter("auto_exposure", m_auto_exposure, "3");
-  bindParameter("video_file", m_video_file, "video.mp4");
-  bindParameter("capture_mode", m_capture_mode, "0");
+  bindParameter("exposure_mode", m_exposure_mode, "auto");
+  bindParameter("exposure_absolute", m_exposure_absolute, "166");
   // </rtc-template>
 
   return RTC::RTC_OK;

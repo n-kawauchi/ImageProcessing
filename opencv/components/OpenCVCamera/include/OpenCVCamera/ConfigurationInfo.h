@@ -16,10 +16,10 @@ typedef struct {
   int    brightness;
   int    contrast;
   int    saturation;
-  double hue;
-  double gain;
-  double exposure;
-  double auto_exposure;
+  int    hue;
+  int    gain;
+  int    exposure_mode;
+  int    exposure_absolute; 
 }CONFIG_PRM;
 
 #endif

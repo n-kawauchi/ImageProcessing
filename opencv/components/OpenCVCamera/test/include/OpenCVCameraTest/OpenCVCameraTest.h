@@ -231,10 +231,28 @@ class OpenCVCameraTest
   // <rtc-template block="config_declare">
   /*!
    * 
+   * - Name:  capture_mode
+   * - DefaultValue: camera
+   */
+  std::string m_capture_mode;
+  /*!
+   * 
    * - Name:  device_num
    * - DefaultValue: 0
    */
   int m_device_num;
+  /*!
+   * 
+   * - Name:  video_file
+   * - DefaultValue: video.mp4
+   */
+  std::string m_video_file;
+  /*!
+   * 
+   * - Name:  URL
+   * - DefaultValue:  
+   */
+  std::string m_URL;
   /*!
    * 
    * - Name:  frame_width
@@ -285,28 +303,16 @@ class OpenCVCameraTest
   int m_gain;
   /*!
    * 
-   * - Name:  exposure
+   * - Name:  exposure_mode
+   * - DefaultValue: auto
+   */
+  std::string m_exposure_mode;
+  /*!
+   * 
+   * - Name:  exposure_absolute
    * - DefaultValue: 166
    */
-  int m_exposure;
-  /*!
-   * 
-   * - Name:  auto_exposure
-   * - DefaultValue: 3
-   */
-  int m_auto_exposure;
-  /*!
-   * 
-   * - Name:  video_file
-   * - DefaultValue: video.mp4
-   */
-  std::string m_video_file;
-  /*!
-   * 
-   * - Name:  capture_mode
-   * - DefaultValue: 0
-   */
-  int m_capture_mode;
+  int m_exposure_absolute;
 
   // </rtc-template>
 

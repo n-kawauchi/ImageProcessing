@@ -4,6 +4,8 @@
  * @brief USB Camera Acquire component
  * @date  $Date$
  *
+ * @author Noriaki Ando <n-ando@aist.go.jp>
+ *
  * $Id$
  */
 
@@ -36,8 +38,6 @@
 #include <rtm/CorbaPort.h>
 #include <rtm/DataInPort.h>
 #include <rtm/DataOutPort.h>
-
-using namespace RTC;
 
 /*!
  * @class OpenCVCamera
@@ -221,10 +221,28 @@ class OpenCVCamera
   // <rtc-template block="config_declare">
   /*!
    * 
+   * - Name:  capture_mode
+   * - DefaultValue: camera
+   */
+  std::string m_capture_mode;
+  /*!
+   * 
    * - Name:  device_num
    * - DefaultValue: 0
    */
   int m_device_num;
+  /*!
+   * 
+   * - Name:  video_file
+   * - DefaultValue: video.mp4
+   */
+  std::string m_video_file;
+  /*!
+   * 
+   * - Name:  URL
+   * - DefaultValue:  
+   */
+  std::string m_URL;
   /*!
    * 
    * - Name:  frame_width
@@ -275,28 +293,16 @@ class OpenCVCamera
   int m_gain;
   /*!
    * 
-   * - Name:  auto_exposure
-   * - DefaultValue: 3
+   * - Name:  exposure_mode
+   * - DefaultValue: auto
    */
-  int m_auto_exposure;
-    /*!
+  std::string m_exposure_mode;
+  /*!
    * 
-   * - Name:  exposure
+   * - Name:  exposure_absolute
    * - DefaultValue: 166
    */
-  int m_exposure;
-  /*!
-   * 
-   * - Name:  video_file
-   * - DefaultValue: video.mp4
-   */
-  std::string m_video_file;
-  /*!
-   * 
-   * - Name:  capture_mode
-   * - DefaultValue: 0
-   */
-  int m_capture_mode;
+  int m_exposure_absolute;
 
   // </rtc-template>
 
@@ -338,35 +344,37 @@ class OpenCVCamera
   // <rtc-template block="private_operation">
   
   // </rtc-template>
-  cv::VideoCapture m_capture;
-  CaptureCameraControl *m_CamCtl;
-  CONFIG_PRM m_config_prm;
+  cv::VideoCapture      m_capture;
+  CaptureCameraControl* m_CamCtl;
+  CONFIG_PRM            m_config_prm;
   
   bool check_config_parameters();
   void copy_config_camera_property(std::string target);
   void get_real_camera_property();
+  int  get_exposure_mode_menu_number(std::string config_val);
   
-  int m_device_id;
-  std::string m_current_video_file;  
+  int m_current_device_num;
+  std::string m_current_video_file;
+  std::string m_current_URL;
   int m_current_frame_width;
   int m_current_frame_height;
   int m_current_frame_rate;
   
-  double m_currentBrightness;
-  double m_currentContrast;
-  double m_currentSaturation;
-  double m_currentHue;
-  double m_currentGain;
-  double m_currentExposure;
-  double m_currentAutoExposure;
+  int m_currentBrightness;
+  int m_currentContrast;
+  int m_currentSaturation;
+  int m_currentHue;
+  int m_currentGain;
+  int m_currentExposureMode;
+  int m_currentExposure;
   
   int m_real_camera_Brightness;
   int m_real_camera_Contrast;
   int m_real_camera_Saturation;
   int m_real_camera_Hue;
   int m_real_camera_Gain;
+  int m_real_camera_ExposureMode;
   int m_real_camera_Exposure;
-  int m_real_camera_AutoExposure;
     
   
   int dummy;

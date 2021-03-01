@@ -24,6 +24,8 @@ public:
   CaptureCameraControl(VideoCapture *cap);
   
   bool open_camera(CONFIG_PRM *prm);
+  bool open_video_file(std::string video_file);
+  bool open_url(std::string url);
   int get_camera_property(std::string target,
                          VideoCaptureProperties label);
   void check_and_set_camera_property(std::string target,

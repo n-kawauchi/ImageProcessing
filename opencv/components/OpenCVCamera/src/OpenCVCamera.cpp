@@ -27,7 +27,10 @@ static const char* opencvcamera_spec[] =
     "language",          "C++",
     "lang_type",         "compile",
     // Configuration variables
+    "conf.default.capture_mode", "camera",
     "conf.default.device_num", "0",
+    "conf.default.video_file", "video.mp4",
+    "conf.default.URL", " ",
     "conf.default.frame_width", "640",
     "conf.default.frame_height", "480",
     "conf.default.frame_rate", "30",
@@ -36,13 +39,14 @@ static const char* opencvcamera_spec[] =
     "conf.default.saturation", "32",
     "conf.default.hue", "0",
     "conf.default.gain", "64",
-    "conf.default.auto_exposure", "3",
-    "conf.default.exposure", "166",
-    "conf.default.video_file", "video.mp4",
-    "conf.default.capture_mode", "0",
+    "conf.default.exposure_mode", "auto",
+    "conf.default.exposure_absolute", "166",
 
     // Widget
+    "conf.__widget__.capture_mode", "radio",
     "conf.__widget__.device_num", "text",
+    "conf.__widget__.video_file", "text",
+    "conf.__widget__.URL", "text",
     "conf.__widget__.frame_width", "text",
     "conf.__widget__.frame_height", "text",
     "conf.__widget__.frame_rate", "text",
@@ -50,22 +54,23 @@ static const char* opencvcamera_spec[] =
     "conf.__widget__.contrast", "slider.1",
     "conf.__widget__.saturation", "slider.1",
     "conf.__widget__.hue", "slider.1",
-    "conf.__widget__.gain", "slider.1",    
-    "conf.__widget__.auto_exposure", "radio",
-    "conf.__widget__.exposure", "slider.1",
-    "conf.__widget__.video_file", "text",
-    "conf.__widget__.capture_mode", "radio",
+    "conf.__widget__.gain", "slider.1",
+    "conf.__widget__.exposure_mode", "radio",
+    "conf.__widget__.exposure_absolute", "slider.1",
     // Constraints
+    "conf.__constraints__.capture_mode", "(camera,video,URL)",
     "conf.__constraints__.brightness", "0<=x<=255",
     "conf.__constraints__.contrast", "0<=x<=255",
     "conf.__constraints__.saturation", "0<=x<=255",
-    "conf.__constraints__.hue", "-180<=x<=180",
-    "conf.__constraints__.gain", "0<=x<=255",   
-    "conf.__constraints__.auto_exposure", "(1,3)",
-    "conf.__constraints__.exposure", "1<=x<=100000",
-    "conf.__constraints__.capture_mode", "(0,1)",
+    "conf.__constraints__.hue", "-2000<=x<=2000",
+    "conf.__constraints__.gain", "0<=x<=255",
+    "conf.__constraints__.exposure_mode", "(manual,auto)",
+    "conf.__constraints__.exposure_absolute", "3<=x<=2047",
 
+    "conf.__type__.capture_mode", "string",
     "conf.__type__.device_num", "int",
+    "conf.__type__.video_file", "string",
+    "conf.__type__.URL", "string",
     "conf.__type__.frame_width", "int",
     "conf.__type__.frame_height", "int",
     "conf.__type__.frame_rate", "int",
@@ -73,11 +78,9 @@ static const char* opencvcamera_spec[] =
     "conf.__type__.contrast", "int",
     "conf.__type__.saturation", "int",
     "conf.__type__.hue", "int",
-    "conf.__type__.gain", "int",   
-    "conf.__type__.auto_exposure", "int",
-    "conf.__type__.exposure", "int",
-    "conf.__type__.video_file", "string",
-    "conf.__type__.capture_mode", "int",
+    "conf.__type__.gain", "int",
+    "conf.__type__.exposure_mode", "string",
+    "conf.__type__.exposure_absolute", "int",
 
     ""
   };
@@ -98,7 +101,7 @@ OpenCVCamera::OpenCVCamera(RTC::Manager* manager)
     m_currentSaturation(32),
     m_currentHue(0),
     m_currentGain(64),    
-    m_currentAutoExposure(3),
+    m_currentExposureMode(3),
     m_currentExposure(166),  
     dummy(0)
 {
@@ -132,7 +135,10 @@ RTC::ReturnCode_t OpenCVCamera::onInitialize()
 
   // <rtc-template block="bind_config">
   // Bind variables and configuration variable
+  bindParameter("capture_mode", m_capture_mode, "camera");
   bindParameter("device_num", m_device_num, "0");
+  bindParameter("video_file", m_video_file, "video.mp4");
+  bindParameter("URL", m_URL, " ");
   bindParameter("frame_width", m_frame_width, "640");
   bindParameter("frame_height", m_frame_height, "480");
   bindParameter("frame_rate", m_frame_rate, "30");
@@ -141,13 +147,12 @@ RTC::ReturnCode_t OpenCVCamera::onInitialize()
   bindParameter("saturation", m_saturation, "32");
   bindParameter("hue", m_hue, "0");
   bindParameter("gain", m_gain, "64");
-  bindParameter("exposure", m_exposure, "166");
-  bindParameter("auto_exposure", m_auto_exposure, "3");
-  bindParameter("video_file", m_video_file, "video.mp4");
-  bindParameter("capture_mode", m_capture_mode, "0");
+  bindParameter("exposure_mode", m_exposure_mode, "auto");
+  bindParameter("exposure_absolute", m_exposure_absolute, "166");
   // </rtc-template>
  
-  m_device_id = -1;
+  //m_current_device_id = -1;
+  //m_current_video_file = "";
   
 
   return RTC::RTC_OK;
@@ -181,11 +186,10 @@ RTC::ReturnCode_t OpenCVCamera::onActivated(RTC::UniqueId ec_id)
   using std::endl;
   m_CamCtl = new CaptureCameraControl(&m_capture);
 
-  if (m_capture_mode == 0) // Camera Mode
+  if (m_capture_mode == "camera")
   {
     copy_config_camera_property("all");
-    
-    m_device_id = m_device_num;
+        
     if (m_CamCtl->open_camera(&m_config_prm))
     {
       cout << "Camera device opened." << endl;
@@ -196,24 +200,40 @@ RTC::ReturnCode_t OpenCVCamera::onActivated(RTC::UniqueId ec_id)
       return RTC::RTC_ERROR;
     }
     
-    m_current_frame_width = m_frame_width;
-    m_current_frame_height = m_frame_height;
-    m_current_frame_rate = m_frame_rate;
-    m_current_video_file = m_video_file;
-    
+    m_current_device_num = m_device_num;
     get_real_camera_property();
+  }
+  else if (m_capture_mode == "video")
+  {
+    if (m_CamCtl->open_video_file(m_video_file))
+    {
+      cout << "Video file opened." << endl;
+      RTC_TRACE(("*** onActivated: Video file opened. "));
+    }
+    else
+    {
+      return RTC::RTC_ERROR;
+    }
+    m_current_video_file = m_video_file;
+
   }
   else
   {
-    m_capture.open(m_video_file);
-    cout << "CAP_FPS: " << m_capture.get(CAP_PROP_FPS) << endl;
-    double fps = m_capture.get(CAP_PROP_FPS);
-    if (!m_capture.isOpened())
+    if (m_CamCtl->open_url(m_URL))
     {
-      cout << "No Video File" << endl;
+      cout << "URL opened." << endl;
+      RTC_TRACE(("*** onActivated: URL opened. "));
+    }
+    else
+    {
       return RTC::RTC_ERROR;
     }
+    m_current_URL = m_URL;
   }
+  
+  m_current_frame_width = m_frame_width;
+  m_current_frame_height = m_frame_height;
+  m_current_frame_rate = m_frame_rate;
   
   return RTC::RTC_OK;
 }
@@ -244,24 +264,20 @@ RTC::ReturnCode_t OpenCVCamera::onExecute(RTC::UniqueId ec_id)
   {
     if (!m_capture.read(cam_frame))
     {
-      if (m_capture_mode == 0)
+      if (m_capture_mode == "camera" ||
+          m_capture_mode == "URL")
       {
         cout << "Bad frame or no frame!!" << endl;
+        RTC_TRACE(("*** onExecute: Bad frame or no frame!!"));
         return RTC::RTC_ERROR;
       }
       else
       {
-        std::cout << "Frame End" << std::endl;
-        // m_capture.set(CV_CAP_PROP_FRAME_COUNT, 0.0);
-        // return RTC::RTC_OK;
-        m_capture.release(); // 
-        m_capture.open(m_video_file);
-
-        if (!m_capture.isOpened())
-        {
-          cout << "No Video File" << endl;
-          return RTC::RTC_ERROR;
-        }
+        std::cout << "Video frame End." << std::endl;
+        RTC_TRACE(("*** onExecute: Video frame End."));
+        m_capture.set(CAP_PROP_POS_FRAMES, 0);
+        std::cout << "To the first frame for loop playback." << std::endl;
+        RTC_TRACE(("*** onExecute: To the first frame for loop playback."));
         return RTC::RTC_OK;
       }
     }
@@ -269,10 +285,10 @@ RTC::ReturnCode_t OpenCVCamera::onExecute(RTC::UniqueId ec_id)
   catch (...)
   {
     std::cout << "Exception" << std::endl;
-    if (m_capture_mode == 0)
+    if (m_capture_mode == "camera")
     {
       std::cout << "Frame End (exception)" << std::endl;
-      m_capture.release(); // set(CV_CAP_PROP_FRAME_COUNT, 0.0);
+      m_capture.release(); // set(CAP_PROP_FRAME_COUNT, 0.0);
       m_capture.open(m_video_file);
 
       if (!m_capture.isOpened())
@@ -351,37 +367,56 @@ bool OpenCVCamera::check_config_parameters()
   using std::cout;
   using std::endl;
 
-  if (m_capture_mode == 0)
+  if (m_capture_mode == "camera")
   {
-    if (m_device_num != m_device_id)
+    if (m_current_device_num != m_device_num)
     {
       copy_config_camera_property("basic");
-      m_device_id = m_device_num;
       
       if (m_CamCtl->open_camera(&m_config_prm))
       {
         cout << "Changed camera device opened." << endl;
-        RTC_TRACE(("*** onExecute: Changed camera device opened. "));
+        RTC_TRACE(("*** Changed camera device opened. "));
       }
       else
       {
         return false;
       }
+      m_current_device_num = m_device_num;
       get_real_camera_property();
+    }
+  }
+  else if (m_capture_mode == "video")
+  {
+    if (m_current_video_file != m_video_file)
+    {   
+      if (m_CamCtl->open_video_file(m_video_file))
+      {
+        cout << "Changed video filece opened." << endl;
+        RTC_TRACE(("*** Changed video filece opened. "));
+      }
+      else
+      {
+        return false;
+      }
+      m_current_video_file = m_video_file;
     }
   }
   else
   {
-    if (m_current_video_file != m_video_file)
-    {
-      m_current_video_file = m_video_file;
-      m_capture.open(m_video_file);
-
-      if (!m_capture.isOpened())
+    // capture_mode :URL
+    if (m_current_URL != m_URL)
+    {   
+      if (m_CamCtl->open_url(m_URL))
       {
-        cout << "No Video File" << endl;
+        cout << "Changed URL opened." << endl;
+        RTC_TRACE(("*** Changed URL opened. "));
+      }
+      else
+      {
         return false;
       }
+      m_current_URL = m_URL;
     }
   }
 
@@ -443,23 +478,25 @@ bool OpenCVCamera::check_config_parameters()
     m_CamCtl->check_and_set_camera_property("Gain", 
                 m_real_camera_Gain, m_gain, CAP_PROP_GAIN);
   }
-  
-  if (m_currentExposure != m_exposure)
+ 
+  int menu_number = get_exposure_mode_menu_number(m_exposure_mode);
+  if (m_currentExposureMode != menu_number)
   {
-    copy_config_camera_property("exposure");
-    m_currentExposure = m_exposure;
+    copy_config_camera_property("exposure_mode");
+    m_currentExposureMode = menu_number;
+    m_CamCtl->check_and_set_camera_property("ExposureMode", 
+              m_real_camera_ExposureMode, menu_number, CAP_PROP_AUTO_EXPOSURE);
+  }
+
+  
+  if (m_currentExposure != m_exposure_absolute)
+  {
+    copy_config_camera_property("exposure_absolute");
+    m_currentExposure = m_exposure_absolute;
     m_CamCtl->check_and_set_camera_property("Exposure", 
-                m_real_camera_Exposure, m_exposure, CAP_PROP_EXPOSURE);
+                m_real_camera_Exposure, m_exposure_absolute, CAP_PROP_EXPOSURE);
   }
-  
-  if(m_currentAutoExposure != m_auto_exposure)
-  {
-    copy_config_camera_property("auto_exposure");
-    m_currentAutoExposure = m_auto_exposure;
-    m_CamCtl->check_and_set_camera_property("AutoExposure", 
-                m_real_camera_AutoExposure, m_auto_exposure, CAP_PROP_AUTO_EXPOSURE);
-  }
-  
+    
   return true;
 }
 
@@ -492,14 +529,14 @@ void OpenCVCamera::copy_config_camera_property(std::string target)
   {
     m_config_prm.gain = m_gain;
   }
-  if (target == "all" || target == "exposure")
+  if (target == "all" || target == "exposure_mode")
   {
-    m_config_prm.exposure = m_exposure;
+    m_config_prm.exposure_mode = get_exposure_mode_menu_number(m_exposure_mode);
   }
-  if (target == "all" || target == "auto_exposure")
+  if (target == "all" || target == "exposure_absolute")
   {
-    m_config_prm.auto_exposure = m_auto_exposure;
-  }
+    m_config_prm.exposure_absolute = m_exposure_absolute;
+  }  
 }
 
 void OpenCVCamera::get_real_camera_property()
@@ -509,8 +546,23 @@ void OpenCVCamera::get_real_camera_property()
   m_real_camera_Saturation = m_CamCtl->get_camera_property("Saturation", cv::CAP_PROP_SATURATION);  
   m_real_camera_Hue = m_CamCtl->get_camera_property("Hue", cv::CAP_PROP_HUE);
   m_real_camera_Gain = m_CamCtl->get_camera_property("Gain", cv::CAP_PROP_GAIN);
+  m_real_camera_ExposureMode = m_CamCtl->get_camera_property("ExposureMode", cv::CAP_PROP_AUTO_EXPOSURE);
   m_real_camera_Exposure = m_CamCtl->get_camera_property("Exposure", cv::CAP_PROP_EXPOSURE);
-  m_real_camera_AutoExposure = m_CamCtl->get_camera_property("AutoExposure", cv::CAP_PROP_AUTO_EXPOSURE);
+}
+
+int OpenCVCamera::get_exposure_mode_menu_number(std::string config_val)
+{
+  int menu_number;
+  
+  if (m_exposure_mode == "auto")
+  {
+    menu_number = 3;
+  }
+  else
+  {
+    menu_number = 1;
+  }
+  return menu_number;
 }
 
 extern "C"
